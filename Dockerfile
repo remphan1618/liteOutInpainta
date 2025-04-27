@@ -1,10 +1,15 @@
 # Start with a CUDA-enabled PyTorch image
 FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime
 
+# Set environment variables for non-interactive installation
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+
 # Set working directory
 WORKDIR /app
 
 # Install git and other dependencies
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get update && apt-get install -y \
     git \
     wget \
@@ -26,7 +31,7 @@ ENV CONTROLNET_MODELS_PATH=/app/models/controlnet
 ENV XFORMERS_MEMORY_EFFICIENT_ATTENTION=1
 ENV PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
 
-# Download models (this part takes a while, grab a fucking beer)
+# Download models (this part takes a while)
 RUN python -c "from huggingface_hub import snapshot_download; import os; \
     os.makedirs('models', exist_ok=True); \
     snapshot_download(repo_id='stabilityai/stable-diffusion-xl-base-1.0', cache_dir='models'); \
